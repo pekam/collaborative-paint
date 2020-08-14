@@ -28,6 +28,7 @@ export class PaintView extends LitElement {
   private mousePosition: Position = {x:0, y:0};
 
   private color: string = "#ffffff";
+  private brushSize: number = 3;
 
   private pendingOps: DrawOperation[] = [];
 
@@ -40,10 +41,18 @@ export class PaintView extends LitElement {
 
   render() {
     return html`
-      <label>Pick your color:</label>
+      <label>Brush color:</label>
       <input type="color"
         value="${this.color}"
         @change="${(e:any) => this.color = e.target.value}"
+      >
+      <br>
+      <label>Brush size:</label>
+      <input type="range"
+        min="1"
+        max="5"
+        value="${this.brushSize}"
+        @change="${(e:any) => this.brushSize = e.target.value}"
       >
       <canvas id="canvas"
         width=${this.WIDTH}
@@ -68,6 +77,7 @@ export class PaintView extends LitElement {
 
       const op: DrawOperation = {
         color: this.color,
+        brushSize: this.brushSize,
         startPosition: {
           x: this.mousePosition.x - offsetX,
           y: this.mousePosition.y - offsetY
@@ -85,7 +95,7 @@ export class PaintView extends LitElement {
 
   private applyOperation(op: DrawOperation) {
     this.ctx.strokeStyle = op.color;
-    this.ctx.lineWidth = 10;
+    this.ctx.lineWidth = (op.brushSize * 2) ** 2;
     this.ctx.lineCap = "round";
     this.ctx.beginPath();
     this.ctx.moveTo(op.startPosition.x, op.startPosition.y);

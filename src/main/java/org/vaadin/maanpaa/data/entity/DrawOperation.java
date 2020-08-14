@@ -3,6 +3,7 @@ package org.vaadin.maanpaa.data.entity;
 public class DrawOperation {
 
     private String color;
+    private int brushSize;
     private Position startPosition;
     private Position endPosition;
 
@@ -12,6 +13,14 @@ public class DrawOperation {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public int getBrushSize() {
+        return brushSize;
+    }
+
+    public void setBrushSize(int brushSize) {
+        this.brushSize = brushSize;
     }
 
     public Position getStartPosition() {
