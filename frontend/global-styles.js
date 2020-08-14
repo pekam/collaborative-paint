@@ -8,6 +8,9 @@ const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `
 <custom-style>
   <style>
+    .v-loading-indicator {
+      display: none;
+    }
     html {
       --lumo-shade-5pct: rgba(33, 33, 33, 0.05);
       --lumo-shade-10pct: rgba(33, 33, 33, 0.1);
