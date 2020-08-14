@@ -1,4 +1,7 @@
-import {LitElement, html, css, customElement, query} from 'lit-element';
+import {css, customElement, html, LitElement, query} from 'lit-element';
+import DrawOperation
+  from "../../generated/org/vaadin/maanpaa/data/entity/DrawOperation";
+import {addOperation} from "../../generated/DrawEndpoint";
 
 @customElement('paint-view')
 export class PaintView extends LitElement {
@@ -44,14 +47,26 @@ export class PaintView extends LitElement {
       const {x: offsetX, y: offsetY} =
           this.canvas.getBoundingClientRect();
       const {clientX: mouseX, clientY: mouseY} = e;
-      this.ctx.strokeStyle = 'white';
+
+      const op: DrawOperation = {
+        color: "white",
+        startPosition: {
+          x: this.mouseX - offsetX,
+          y: this.mouseY - offsetY
+        },
+        endPosition: {
+          x: mouseX - offsetX,
+          y: mouseY - offsetY
+        }
+      }
+      addOperation(op);
+
+      this.ctx.strokeStyle = op.color;
       this.ctx.lineWidth = 10;
       this.ctx.lineCap = "round";
       this.ctx.beginPath();
-      this.ctx.moveTo(this.mouseX - offsetX,
-          this.mouseY - offsetY);
-      this.ctx.lineTo(mouseX - offsetX,
-          mouseY - offsetY);
+      this.ctx.moveTo(op.startPosition.x, op.startPosition.y);
+      this.ctx.lineTo(op.endPosition.x, op.endPosition.y);
       this.ctx.stroke();
     }
     this.mouseX = e.clientX;
