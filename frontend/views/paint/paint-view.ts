@@ -59,18 +59,23 @@ export class PaintView extends LitElement {
           y: mouseY - offsetY
         }
       }
-      addOperation(op);
-
-      this.ctx.strokeStyle = op.color;
-      this.ctx.lineWidth = 10;
-      this.ctx.lineCap = "round";
-      this.ctx.beginPath();
-      this.ctx.moveTo(op.startPosition.x, op.startPosition.y);
-      this.ctx.lineTo(op.endPosition.x, op.endPosition.y);
-      this.ctx.stroke();
+      addOperation(op).then(ops => {
+        ops.forEach(op => this.applyOperation(op));
+      });
+      this.applyOperation(op);
     }
     this.mouseX = e.clientX;
     this.mouseY = e.clientY;
+  }
+
+  private applyOperation(op: DrawOperation) {
+    this.ctx.strokeStyle = op.color;
+    this.ctx.lineWidth = 10;
+    this.ctx.lineCap = "round";
+    this.ctx.beginPath();
+    this.ctx.moveTo(op.startPosition.x, op.startPosition.y);
+    this.ctx.lineTo(op.endPosition.x, op.endPosition.y);
+    this.ctx.stroke();
   }
 
 }
