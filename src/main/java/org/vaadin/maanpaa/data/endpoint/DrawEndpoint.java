@@ -16,9 +16,9 @@ public class DrawEndpoint {
 
     private static List<DrawOperation> ops = new ArrayList<>();
 
-    public List<DrawOperation> addOperation(DrawOperation operation) {
+    public List<DrawOperation> update(List<DrawOperation> opsToAdd) {
         synchronized (lock) {
-            ops.add(operation);
+            ops.addAll(opsToAdd);
             return ops;
         }
     }

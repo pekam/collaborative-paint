@@ -1,7 +1,7 @@
 import {css, customElement, html, LitElement, query} from 'lit-element';
 import DrawOperation
   from "../../generated/org/vaadin/maanpaa/data/entity/DrawOperation";
-import {addOperation} from "../../generated/DrawEndpoint";
+import {update} from "../../generated/DrawEndpoint";
 
 @customElement('paint-view')
 export class PaintView extends LitElement {
@@ -27,9 +27,13 @@ export class PaintView extends LitElement {
   private mouseX: number = 0;
   private mouseY: number = 0;
 
+  private pendingOps: DrawOperation[] = [];
+
   async firstUpdated(changedProperties: any) {
     super.firstUpdated(changedProperties);
     this.ctx = this.canvas.getContext('2d');
+
+    setInterval(() => this.syncWithServer(), 500);
   }
 
   render() {
@@ -41,6 +45,13 @@ export class PaintView extends LitElement {
       ></canvas>
     `;
   }
+
+  private syncWithServer() {
+    update(this.pendingOps).then(
+        allOps => allOps.forEach(op => this.applyOperation(op)));
+    this.pendingOps = [];
+  }
+
 
   private onMousemove = (e: MouseEvent) => {
     if (e.buttons === 1) {
@@ -59,9 +70,7 @@ export class PaintView extends LitElement {
           y: mouseY - offsetY
         }
       }
-      addOperation(op).then(ops => {
-        ops.forEach(op => this.applyOperation(op));
-      });
+      this.pendingOps = [...this.pendingOps, op];
       this.applyOperation(op);
     }
     this.mouseX = e.clientX;
