@@ -2,6 +2,7 @@ import {css, customElement, html, LitElement, query} from 'lit-element';
 import DrawOperation
   from "../../generated/org/vaadin/maanpaa/data/entity/DrawOperation";
 import {update} from "../../generated/DrawEndpoint";
+import Position from "../../generated/org/vaadin/maanpaa/data/entity/Position";
 
 @customElement('paint-view')
 export class PaintView extends LitElement {
@@ -24,8 +25,7 @@ export class PaintView extends LitElement {
   private canvas: any;
   private ctx: any;
 
-  private mouseX: number = 0;
-  private mouseY: number = 0;
+  private mousePosition: Position = {x:0, y:0};
 
   private color: string = "#ffffff";
 
@@ -69,8 +69,8 @@ export class PaintView extends LitElement {
       const op: DrawOperation = {
         color: this.color,
         startPosition: {
-          x: this.mouseX - offsetX,
-          y: this.mouseY - offsetY
+          x: this.mousePosition.x - offsetX,
+          y: this.mousePosition.y - offsetY
         },
         endPosition: {
           x: mouseX - offsetX,
@@ -80,8 +80,7 @@ export class PaintView extends LitElement {
       this.pendingOps = [...this.pendingOps, op];
       this.applyOperation(op);
     }
-    this.mouseX = e.clientX;
-    this.mouseY = e.clientY;
+    this.mousePosition = {x: e.clientX, y: e.clientY};
   }
 
   private applyOperation(op: DrawOperation) {
