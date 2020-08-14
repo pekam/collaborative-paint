@@ -27,6 +27,8 @@ export class PaintView extends LitElement {
   private mouseX: number = 0;
   private mouseY: number = 0;
 
+  private color: string = "#ffffff";
+
   private pendingOps: DrawOperation[] = [];
 
   async firstUpdated(changedProperties: any) {
@@ -38,6 +40,11 @@ export class PaintView extends LitElement {
 
   render() {
     return html`
+      <label>Pick your color:</label>
+      <input type="color"
+        value="${this.color}"
+        @change="${(e:any) => this.color = e.target.value}"
+      >
       <canvas id="canvas"
         width=${this.WIDTH}
         height=${this.HEIGHT}
@@ -60,7 +67,7 @@ export class PaintView extends LitElement {
       const {clientX: mouseX, clientY: mouseY} = e;
 
       const op: DrawOperation = {
-        color: "white",
+        color: this.color,
         startPosition: {
           x: this.mouseX - offsetX,
           y: this.mouseY - offsetY
