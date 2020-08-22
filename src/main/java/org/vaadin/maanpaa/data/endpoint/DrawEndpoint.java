@@ -1,10 +1,14 @@
 package org.vaadin.maanpaa.data.endpoint;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.vaadin.maanpaa.data.entity.CursorInfo;
 import org.vaadin.maanpaa.data.entity.DrawOperation;
 
 import com.vaadin.flow.server.connect.Endpoint;
@@ -17,6 +21,8 @@ public class DrawEndpoint {
     private static Object lock = new Object();
 
     private static List<DrawOperation> ops = new ArrayList<>();
+
+    private static Map<String, CursorInfo> cursors = new ConcurrentHashMap<>();
 
     public List<DrawOperation> update(List<DrawOperation> opsToAdd) {
         synchronized (lock) {
@@ -34,6 +40,11 @@ public class DrawEndpoint {
 
         lastStateSyncIndex.ifPresent(
                 index -> ops = ops.subList(index, ops.size()));
+    }
+
+    public Collection<CursorInfo> updateCursors(CursorInfo cursor) {
+        cursors.put(cursor.getId(), cursor);
+        return cursors.values();
     }
 
 }

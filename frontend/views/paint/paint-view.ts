@@ -1,9 +1,20 @@
-import {css, customElement, html, LitElement, query} from 'lit-element';
+import {
+  css,
+  customElement,
+  html,
+  LitElement,
+  property,
+  query
+} from 'lit-element';
 import DrawOperation
   from "../../generated/org/vaadin/maanpaa/data/entity/DrawOperation";
 import Position from "../../generated/org/vaadin/maanpaa/data/entity/Position";
 import {deserializeCanvas, serializeCanvas} from "./canvas-serializer";
-import {update} from "../../generated/DrawEndpoint";
+import {update, updateCursors} from "../../generated/DrawEndpoint";
+import "./user-cursor";
+import CursorInfo
+  from "../../generated/org/vaadin/maanpaa/data/entity/CursorInfo";
+import "@vaadin/vaadin-text-field";
 
 @customElement('paint-view')
 export class PaintView extends LitElement {
@@ -26,6 +37,9 @@ export class PaintView extends LitElement {
   private canvas: any;
   private ctx: any;
 
+  private userId: string = Math.random() + '';
+  private name: string = "Anonymous";
+
   private mousePosition: Position = {x:0, y:0};
 
   private color: string = "#ffffff";
@@ -33,17 +47,29 @@ export class PaintView extends LitElement {
 
   private pendingOps: DrawOperation[] = [];
 
+  @property()
+  private cursors: CursorInfo[] = [];
+
   async firstUpdated(changedProperties: any) {
     super.firstUpdated(changedProperties);
     this.ctx = this.canvas.getContext('2d');
 
     setInterval(() => this.syncWithServer(), 500);
     setInterval(() => this.addSyncStateOp(), 5000);
+
+    setInterval(() => this.syncCursors(), 500);
   }
 
   render() {
     return html`
       <form>
+        <vaadin-text-field
+          label="Username"
+          value="${this.name}"
+          @value-changed="${(e:any) => this.name = e.detail.value}"
+          >
+        </vaadin-text-field>
+        <br>
         <label>Brush color:</label>
         <input type="color"
           value="${this.color}"
@@ -59,6 +85,16 @@ export class PaintView extends LitElement {
         >
       </form>
       <br>
+
+      ${this.cursors.map(c => html`
+        <user-cursor
+          name="${c.name}"
+          x="${c.position.x}"
+          y="${c.position.y}"
+          color="${c.color}"
+          userId="${c.id}"
+        ></user-cursor>`)}
+
       <canvas id="canvas"
         width=${this.WIDTH}
         height=${this.HEIGHT}
@@ -131,6 +167,15 @@ export class PaintView extends LitElement {
       brushSize: 0,
       state: serializeCanvas(this.canvas)
     });
+  }
+
+  private syncCursors(): void {
+    updateCursors({
+      id: this.userId,
+      color: this.color,
+      name: this.name,
+      position: this.mousePosition
+    }).then(cursors => this.cursors = cursors);
   }
 
 }
