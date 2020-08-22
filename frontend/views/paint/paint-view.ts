@@ -86,7 +86,7 @@ export class PaintView extends LitElement {
       </form>
       <br>
 
-      ${this.cursors.map(c => html`
+      ${this.cursors.filter(c => c.id !== this.userId).map(c => html`
         <user-cursor
           name="${c.name}"
           x="${c.position.x}"
