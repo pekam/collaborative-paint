@@ -1,8 +1,9 @@
 import {css, customElement, html, LitElement, query} from 'lit-element';
 import DrawOperation
   from "../../generated/org/vaadin/maanpaa/data/entity/DrawOperation";
-import {update} from "../../generated/DrawEndpoint";
+import {loadCanvas, saveCanvas, update} from "../../generated/DrawEndpoint";
 import Position from "../../generated/org/vaadin/maanpaa/data/entity/Position";
+import {deserializeCanvas, serializeCanvas} from "./canvas-serializer";
 
 @customElement('paint-view')
 export class PaintView extends LitElement {
@@ -56,6 +57,9 @@ export class PaintView extends LitElement {
           @change="${(e:any) => this.brushSize = e.target.value}"
         >
       </form>
+      <button @click="${this.save}">save</button>
+      <button @click="${this.load}">load</button>
+      <br>
       <canvas id="canvas"
         width=${this.WIDTH}
         height=${this.HEIGHT}
@@ -107,6 +111,16 @@ export class PaintView extends LitElement {
     this.ctx.moveTo(op.startPosition.x, op.startPosition.y);
     this.ctx.lineTo(op.endPosition.x, op.endPosition.y);
     this.ctx.stroke();
+  }
+
+  private save() {
+    const data = serializeCanvas(this.canvas);
+    saveCanvas(data);
+  }
+
+  private async load() {
+    const data = await loadCanvas();
+    deserializeCanvas(data, this.canvas);
   }
 
 }

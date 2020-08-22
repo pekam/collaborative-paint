@@ -16,11 +16,21 @@ public class DrawEndpoint {
 
     private static List<DrawOperation> ops = new ArrayList<>();
 
+    private static String canvasData;
+
     public List<DrawOperation> update(List<DrawOperation> opsToAdd) {
         synchronized (lock) {
             ops.addAll(opsToAdd);
             return ops;
         }
+    }
+
+    public void saveCanvas(String canvasData) {
+        this.canvasData = canvasData;
+    }
+
+    public String loadCanvas() {
+        return canvasData;
     }
 
 }
