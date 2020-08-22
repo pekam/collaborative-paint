@@ -58,6 +58,7 @@ export class PaintView extends LitElement {
         width=${this.WIDTH}
         height=${this.HEIGHT}
         @mousemove="${this.onMousemove}"
+        @mouseenter="${this.onMouseenter}"
       ></canvas>
     `;
   }
@@ -67,7 +68,6 @@ export class PaintView extends LitElement {
         allOps => allOps.forEach(op => this.applyOperation(op)));
     this.pendingOps = [];
   }
-
 
   private onMousemove = (e: MouseEvent) => {
     if (e.buttons === 1) {
@@ -90,6 +90,10 @@ export class PaintView extends LitElement {
       this.pendingOps = [...this.pendingOps, op];
       this.applyOperation(op);
     }
+    this.mousePosition = {x: e.clientX, y: e.clientY};
+  }
+
+  private onMouseenter = (e: MouseEvent) => {
     this.mousePosition = {x: e.clientX, y: e.clientY};
   }
 
