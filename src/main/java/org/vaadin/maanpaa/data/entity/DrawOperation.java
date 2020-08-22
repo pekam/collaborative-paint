@@ -7,6 +7,8 @@ public class DrawOperation {
     private Position startPosition;
     private Position endPosition;
 
+    private String state;
+
     public String getColor() {
         return color;
     }
@@ -37,6 +39,18 @@ public class DrawOperation {
 
     public void setEndPosition(Position endPosition) {
         this.endPosition = endPosition;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public boolean isStateSync() {
+        return state != null && !state.isEmpty();
     }
 
     @Override

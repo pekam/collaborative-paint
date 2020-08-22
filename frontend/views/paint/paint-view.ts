@@ -1,9 +1,9 @@
 import {css, customElement, html, LitElement, query} from 'lit-element';
 import DrawOperation
   from "../../generated/org/vaadin/maanpaa/data/entity/DrawOperation";
-import {loadCanvas, saveCanvas, update} from "../../generated/DrawEndpoint";
 import Position from "../../generated/org/vaadin/maanpaa/data/entity/Position";
 import {deserializeCanvas, serializeCanvas} from "./canvas-serializer";
+import {update} from "../../generated/DrawEndpoint";
 
 @customElement('paint-view')
 export class PaintView extends LitElement {
@@ -38,6 +38,7 @@ export class PaintView extends LitElement {
     this.ctx = this.canvas.getContext('2d');
 
     setInterval(() => this.syncWithServer(), 500);
+    setInterval(() => this.addSyncStateOp(), 5000);
   }
 
   render() {
@@ -57,8 +58,6 @@ export class PaintView extends LitElement {
           @change="${(e:any) => this.brushSize = e.target.value}"
         >
       </form>
-      <button @click="${this.save}">save</button>
-      <button @click="${this.load}">load</button>
       <br>
       <canvas id="canvas"
         width=${this.WIDTH}
@@ -91,7 +90,8 @@ export class PaintView extends LitElement {
         endPosition: {
           x: mouseX - offsetX,
           y: mouseY - offsetY
-        }
+        },
+        state: ""
       }
       this.pendingOps = [...this.pendingOps, op];
       this.applyOperation(op);
@@ -103,24 +103,34 @@ export class PaintView extends LitElement {
     this.mousePosition = {x: e.clientX, y: e.clientY};
   }
 
+  private stateSynced = false;
   private applyOperation(op: DrawOperation) {
-    this.ctx.strokeStyle = op.color;
-    this.ctx.lineWidth = (op.brushSize * 2) ** 2;
-    this.ctx.lineCap = "round";
-    this.ctx.beginPath();
-    this.ctx.moveTo(op.startPosition.x, op.startPosition.y);
-    this.ctx.lineTo(op.endPosition.x, op.endPosition.y);
-    this.ctx.stroke();
+    const isSyncState = op.state && op.state.length;
+
+    if (isSyncState) {
+      if (!this.stateSynced) {
+        deserializeCanvas(op.state, this.canvas);
+        this.stateSynced = true;
+      }
+    } else {
+      this.ctx.strokeStyle = op.color;
+      this.ctx.lineWidth = (op.brushSize * 2) ** 2;
+      this.ctx.lineCap = "round";
+      this.ctx.beginPath();
+      this.ctx.moveTo(op.startPosition.x, op.startPosition.y);
+      this.ctx.lineTo(op.endPosition.x, op.endPosition.y);
+      this.ctx.stroke();
+    }
   }
 
-  private save() {
-    const data = serializeCanvas(this.canvas);
-    saveCanvas(data);
-  }
-
-  private async load() {
-    const data = await loadCanvas();
-    deserializeCanvas(data, this.canvas);
+  private addSyncStateOp(): void {
+    this.pendingOps.push({
+      color: "",
+      endPosition: {x: 0, y: 0},
+      startPosition: {x: 0, y: 0},
+      brushSize: 0,
+      state: serializeCanvas(this.canvas)
+    });
   }
 
 }

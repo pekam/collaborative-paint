@@ -1,7 +1,9 @@
 package org.vaadin.maanpaa.data.endpoint;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.vaadin.maanpaa.data.entity.DrawOperation;
 
@@ -16,21 +18,22 @@ public class DrawEndpoint {
 
     private static List<DrawOperation> ops = new ArrayList<>();
 
-    private static String canvasData;
-
     public List<DrawOperation> update(List<DrawOperation> opsToAdd) {
         synchronized (lock) {
             ops.addAll(opsToAdd);
-            return ops;
+            cleanOps();
+            return new ArrayList<>(ops);
         }
     }
 
-    public void saveCanvas(String canvasData) {
-        this.canvasData = canvasData;
-    }
+    private void cleanOps() {
+        Optional<Integer> lastStateSyncIndex = ops.stream()
+                .filter(DrawOperation::isStateSync)
+                .map(ops::indexOf)
+                .max(Comparator.comparingInt(a -> a));
 
-    public String loadCanvas() {
-        return canvasData;
+        lastStateSyncIndex.ifPresent(
+                index -> ops = ops.subList(index, ops.size()));
     }
 
 }
