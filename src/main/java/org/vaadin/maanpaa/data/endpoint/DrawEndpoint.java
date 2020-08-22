@@ -33,13 +33,20 @@ public class DrawEndpoint {
     }
 
     private void cleanOps() {
+        if (ops.size() < 100) {
+            return;
+        }
+
         Optional<Integer> lastStateSyncIndex = ops.stream()
                 .filter(DrawOperation::isStateSync)
                 .map(ops::indexOf)
                 .max(Comparator.comparingInt(a -> a));
 
         lastStateSyncIndex.ifPresent(
-                index -> ops = ops.subList(index, ops.size()));
+                index -> {
+                    int startIndex = Math.min(50, index);
+                    ops = ops.subList(startIndex, ops.size());
+                });
     }
 
     public Collection<CursorInfo> updateCursors(CursorInfo cursor) {
