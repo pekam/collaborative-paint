@@ -41,19 +41,21 @@ export class PaintView extends LitElement {
 
   render() {
     return html`
-      <label>Brush color:</label>
-      <input type="color"
-        value="${this.color}"
-        @change="${(e:any) => this.color = e.target.value}"
-      >
-      <br>
-      <label>Brush size:</label>
-      <input type="range"
-        min="1"
-        max="5"
-        value="${this.brushSize}"
-        @change="${(e:any) => this.brushSize = e.target.value}"
-      >
+      <form>
+        <label>Brush color:</label>
+        <input type="color"
+          value="${this.color}"
+          @change="${(e:any) => this.color = e.target.value}"
+        >
+        <br>
+        <label>Brush size:</label>
+        <input type="range"
+          min="1"
+          max="5"
+          value="${this.brushSize}"
+          @change="${(e:any) => this.brushSize = e.target.value}"
+        >
+      </form>
       <canvas id="canvas"
         width=${this.WIDTH}
         height=${this.HEIGHT}
