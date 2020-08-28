@@ -117,15 +117,7 @@ export class PaintView extends LitElement {
   }
 
   private onMousemove = (e: MouseEvent) => {
-    const {clientX: mouseX, clientY: mouseY} = e;
-
-    const {x: offsetX, y: offsetY} =
-        this.canvas.getBoundingClientRect();
-
-    const newMousePosition = {
-      x: mouseX - offsetX,
-      y: mouseY - offsetY
-    };
+    const newMousePosition = this.getMousePosition(e);
 
     if (e.buttons === 1 && this.mousePosition) {
 
@@ -143,7 +135,16 @@ export class PaintView extends LitElement {
   }
 
   private onMouseenter = (e: MouseEvent) => {
-    this.mousePosition = {x: e.clientX, y: e.clientY};
+    this.mousePosition = this.getMousePosition(e);
+  }
+
+  private getMousePosition = (e: MouseEvent) => {
+    const {x: offsetX, y: offsetY} =
+        this.canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - offsetX,
+      y: e.clientY - offsetY
+    };
   }
 
   private onMouseleave = () => {
