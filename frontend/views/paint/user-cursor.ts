@@ -17,6 +17,10 @@ export class UserCursor extends LitElement {
         border-bottom: none;
         border-right: none;
         user-select: none;
+        transition: left, top;
+        transition-timing-function: linear;
+        transition-duration: .5s;
+        pointer-events: none;
       }
       .name {
         white-space: nowrap;
