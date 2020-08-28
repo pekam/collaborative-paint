@@ -103,6 +103,9 @@ $_documentContainer.innerHTML = `
     html {
       overflow:hidden;
     }
+    body {
+      overflow:auto;
+    }
     vaadin-app-layout vaadin-tab a:hover {
       text-decoration: none;
     }

@@ -61,6 +61,7 @@ export class PaintView extends LitElement {
   }
 
   render() {
+    const {x: offsetX, y: offsetY} = this.canvas ? this.canvas.getBoundingClientRect() : {x: 0, y: 0};
     return html`
       <form>
         <vaadin-text-field
@@ -92,8 +93,8 @@ export class PaintView extends LitElement {
         .map(c => html`
         <user-cursor
           name="${c.name}"
-          x="${(c.position || {x:0}).x}"
-          y="${(c.position || {y:0}).y}"
+          x="${(c.position || {x:0}).x + offsetX}"
+          y="${(c.position || {y:0}).y + offsetY}"
           color="${c.color}"
           userId="${c.id}"
         ></user-cursor>`)}
@@ -115,28 +116,29 @@ export class PaintView extends LitElement {
   }
 
   private onMousemove = (e: MouseEvent) => {
+    const {clientX: mouseX, clientY: mouseY} = e;
+
+    const {x: offsetX, y: offsetY} =
+        this.canvas.getBoundingClientRect();
+
+    const newMousePosition = {
+      x: mouseX - offsetX,
+      y: mouseY - offsetY
+    };
+
     if (e.buttons === 1 && this.mousePosition) {
-      const {x: offsetX, y: offsetY} =
-          this.canvas.getBoundingClientRect();
-      const {clientX: mouseX, clientY: mouseY} = e;
 
       const op: DrawOperation = {
         color: this.color,
         brushSize: this.brushSize,
-        startPosition: {
-          x: this.mousePosition.x - offsetX,
-          y: this.mousePosition.y - offsetY
-        },
-        endPosition: {
-          x: mouseX - offsetX,
-          y: mouseY - offsetY
-        },
+        startPosition: this.mousePosition,
+        endPosition: newMousePosition,
         state: ""
       }
       this.pendingOps = [...this.pendingOps, op];
       this.applyOperation(op);
     }
-    this.mousePosition = {x: e.clientX, y: e.clientY};
+    this.mousePosition = newMousePosition;
   }
 
   private onMouseenter = (e: MouseEvent) => {
