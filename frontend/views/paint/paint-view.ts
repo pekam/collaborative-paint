@@ -111,13 +111,20 @@ export class PaintView extends LitElement {
     `;
   }
 
+  private pendingUpdate = false;
+
   private syncWithServer() {
+    if (this.pendingUpdate) {
+      return;
+    }
+    this.pendingUpdate = true;
     update(this.pendingOps).then(
         allOps => this.handleOpsFromServer(allOps));
     this.pendingOps = [];
   }
 
   private handleOpsFromServer(allOps: DrawOperation[]) {
+    this.pendingUpdate = false;
     allOps.forEach(op => this.applyOperation(op))
     this.shouldAddSyncStateOp = allOps.filter(op => this.isSyncState(op)).length < 2;
   }
@@ -191,13 +198,21 @@ export class PaintView extends LitElement {
     }
   }
 
+  private pendingCursorsUpdate = false;
   private syncCursors(): void {
+    if (this.pendingCursorsUpdate) {
+      return;
+    }
+    this.pendingCursorsUpdate = true;
     updateCursors({
       id: this.userId,
       color: this.color,
       name: this.name,
       position: this.mousePosition
-    }).then(cursors => this.cursors = cursors);
+    }).then(cursors => {
+      this.pendingCursorsUpdate = false;
+      this.cursors = cursors;
+    });
   }
 
 }
