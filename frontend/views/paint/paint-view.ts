@@ -105,6 +105,7 @@ export class PaintView extends LitElement {
         @mousemove="${this.onMousemove}"
         @mouseenter="${this.onMouseenter}"
         @mouseleave="${this.onMouseleave}"
+        ondragstart="return false;" ondrop="return false;"
       ></canvas>
     `;
   }
