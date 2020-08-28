@@ -75,4 +75,19 @@ public class DrawEndpoint {
         return cursors.values();
     }
 
+    // Clear cursors periodically
+    static {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(1000 * 60 * 5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Clearing cursors");
+                cursors.clear();
+            }
+        }).start();
+    }
+
 }
