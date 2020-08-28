@@ -112,21 +112,22 @@ export class PaintView extends LitElement {
   }
 
   private pendingUpdate = false;
-
+  private firstRequestSent = false;
   private syncWithServer() {
     if (this.pendingUpdate) {
       return;
     }
     this.pendingUpdate = true;
-    update(this.pendingOps).then(
+    update(this.pendingOps, !this.firstRequestSent).then(
         allOps => this.handleOpsFromServer(allOps));
     this.pendingOps = [];
+    this.firstRequestSent = true;
   }
 
   private handleOpsFromServer(allOps: DrawOperation[]) {
     this.pendingUpdate = false;
     allOps.forEach(op => this.applyOperation(op))
-    this.shouldAddSyncStateOp = allOps.filter(op => this.isSyncState(op)).length < 2;
+    this.shouldAddSyncStateOp = allOps.length >= 100;
   }
 
   private onMousemove = (e: MouseEvent) => {

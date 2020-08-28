@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.vaadin.maanpaa.data.entity.CursorInfo;
 import org.vaadin.maanpaa.data.entity.DrawOperation;
@@ -24,29 +25,45 @@ public class DrawEndpoint {
 
     private static Map<String, CursorInfo> cursors = new ConcurrentHashMap<>();
 
-    public List<DrawOperation> update(List<DrawOperation> opsToAdd) {
+    public List<DrawOperation> update(List<DrawOperation> opsToAdd, boolean firstCall) {
         synchronized (lock) {
             ops.addAll(opsToAdd);
             cleanOps();
-            return new ArrayList<>(ops);
+            if (firstCall) {
+                int startIndex = getLastStateSyncIndex().orElse(0);
+                return ops.subList(startIndex, ops.size());
+            } else {
+                return ops.stream()
+                        .filter(op -> !op.isStateSync())
+                        .collect(Collectors.toList());
+            }
         }
     }
 
     private void cleanOps() {
+        Optional<Integer> lastStateSyncIndex = getLastStateSyncIndex();
+        lastStateSyncIndex.map(ops::get).ifPresent(lastStateSync -> {
+            ops = ops.stream()
+                    .filter(op -> op == lastStateSync || !op.isStateSync())
+                    .collect(Collectors.toList());
+        });
+
         if (ops.size() < 100) {
             return;
         }
 
-        Optional<Integer> lastStateSyncIndex = ops.stream()
-                .filter(DrawOperation::isStateSync)
-                .map(ops::indexOf)
-                .max(Comparator.comparingInt(a -> a));
-
-        lastStateSyncIndex.ifPresent(
+        getLastStateSyncIndex().ifPresent(
                 index -> {
                     int startIndex = Math.min(50, index);
                     ops = ops.subList(startIndex, ops.size());
                 });
+    }
+
+    private Optional<Integer> getLastStateSyncIndex() {
+        return ops.stream()
+                .filter(DrawOperation::isStateSync)
+                .map(ops::indexOf)
+                .max(Comparator.comparingInt(a -> a));
     }
 
     public Collection<CursorInfo> updateCursors(CursorInfo cursor) {
