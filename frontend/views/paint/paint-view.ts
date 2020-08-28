@@ -50,13 +50,14 @@ export class PaintView extends LitElement {
   @property()
   private cursors: CursorInfo[] = [];
 
+  private shouldAddSyncStateOp = false;
+
   async firstUpdated(changedProperties: any) {
     super.firstUpdated(changedProperties);
     this.ctx = this.canvas.getContext('2d');
 
     setInterval(() => this.syncWithServer(), 500);
     setInterval(() => this.addSyncStateOp(), 5000);
-
     setInterval(() => this.syncCursors(), 500);
   }
 
@@ -112,8 +113,13 @@ export class PaintView extends LitElement {
 
   private syncWithServer() {
     update(this.pendingOps).then(
-        allOps => allOps.forEach(op => this.applyOperation(op)));
+        allOps => this.handleOpsFromServer(allOps));
     this.pendingOps = [];
+  }
+
+  private handleOpsFromServer(allOps: DrawOperation[]) {
+    allOps.forEach(op => this.applyOperation(op))
+    this.shouldAddSyncStateOp = allOps.filter(op => this.isSyncState(op)).length < 2;
   }
 
   private onMousemove = (e: MouseEvent) => {
@@ -151,11 +157,11 @@ export class PaintView extends LitElement {
     this.mousePosition = undefined;
   }
 
+  private isSyncState = (op: DrawOperation) => !!(op.state && op.state.length);
+
   private stateSynced = false;
   private applyOperation(op: DrawOperation) {
-    const isSyncState = op.state && op.state.length;
-
-    if (isSyncState) {
+    if (this.isSyncState(op)) {
       if (!this.stateSynced) {
         deserializeCanvas(op.state, this.canvas);
         this.stateSynced = true;
@@ -172,13 +178,17 @@ export class PaintView extends LitElement {
   }
 
   private addSyncStateOp(): void {
-    this.pendingOps.push({
-      color: "",
-      endPosition: {x: 0, y: 0},
-      startPosition: {x: 0, y: 0},
-      brushSize: 0,
-      state: serializeCanvas(this.canvas)
-    });
+    if (this.shouldAddSyncStateOp && !this.pendingOps.find(op => this.isSyncState(op))) {
+
+      this.pendingOps.push({
+        color: "",
+        endPosition: {x: 0, y: 0},
+        startPosition: {x: 0, y: 0},
+        brushSize: 0,
+        state: serializeCanvas(this.canvas)
+      });
+
+    }
   }
 
   private syncCursors(): void {
