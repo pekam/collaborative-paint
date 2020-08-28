@@ -50,7 +50,11 @@ public class DrawEndpoint {
     }
 
     public Collection<CursorInfo> updateCursors(CursorInfo cursor) {
-        cursors.put(cursor.getId(), cursor);
+        if (cursor.getPosition() != null && cursor.getPosition().isPresent()) {
+            cursors.put(cursor.getId(), cursor);
+        } else {
+            cursors.remove(cursor.getId());
+        }
         return cursors.values();
     }
 

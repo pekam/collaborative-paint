@@ -1,11 +1,13 @@
 package org.vaadin.maanpaa.data.entity;
 
+import java.util.Optional;
+
 public class CursorInfo {
 
     private String id;
     private String name;
     private String color;
-    private Position position;
+    private Optional<Position> position;
 
     public String getId() {
         return id;
@@ -31,11 +33,11 @@ public class CursorInfo {
         this.color = color;
     }
 
-    public Position getPosition() {
+    public Optional<Position> getPosition() {
         return position;
     }
 
-    public void setPosition(Position position) {
+    public void setPosition(Optional<Position> position) {
         this.position = position;
     }
 }

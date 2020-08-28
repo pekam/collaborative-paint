@@ -40,7 +40,7 @@ export class PaintView extends LitElement {
   private userId: string = Math.random() + '';
   private name: string = "Anonymous";
 
-  private mousePosition: Position = {x:0, y:0};
+  private mousePosition: Position | undefined;
 
   private color: string = "#ffffff";
   private brushSize: number = 3;
@@ -86,11 +86,14 @@ export class PaintView extends LitElement {
       </form>
       <br>
 
-      ${this.cursors.filter(c => c.id !== this.userId).map(c => html`
+      ${this.cursors
+        .filter(c => c.id !== this.userId)
+        .filter(c => c.position)
+        .map(c => html`
         <user-cursor
           name="${c.name}"
-          x="${c.position.x}"
-          y="${c.position.y}"
+          x="${(c.position || {x:0}).x}"
+          y="${(c.position || {y:0}).y}"
           color="${c.color}"
           userId="${c.id}"
         ></user-cursor>`)}
@@ -100,6 +103,7 @@ export class PaintView extends LitElement {
         height=${this.HEIGHT}
         @mousemove="${this.onMousemove}"
         @mouseenter="${this.onMouseenter}"
+        @mouseleave="${this.onMouseleave}"
       ></canvas>
     `;
   }
@@ -111,7 +115,7 @@ export class PaintView extends LitElement {
   }
 
   private onMousemove = (e: MouseEvent) => {
-    if (e.buttons === 1) {
+    if (e.buttons === 1 && this.mousePosition) {
       const {x: offsetX, y: offsetY} =
           this.canvas.getBoundingClientRect();
       const {clientX: mouseX, clientY: mouseY} = e;
@@ -137,6 +141,10 @@ export class PaintView extends LitElement {
 
   private onMouseenter = (e: MouseEvent) => {
     this.mousePosition = {x: e.clientX, y: e.clientY};
+  }
+
+  private onMouseleave = () => {
+    this.mousePosition = undefined;
   }
 
   private stateSynced = false;
